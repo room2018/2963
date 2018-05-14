@@ -162,21 +162,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
         button1 = (Button) findViewById(R.id.homeButtonQR);
 
-        new IntentIntegrator(MainActivity.this).initiateScan();
-
-        /*
-        IntentIntegrator integrator = new IntentIntegrator(this);
-
-        integrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
-//        integrator.setPrompt("Scan a barcode");
-        integrator.setCameraId(0); // Use a specific camera of the device
+//        new IntentIntegrator(MainActivity.this).initiateScan();
+        IntentIntegrator integrator = new IntentIntegrator(MainActivity.this);
+        integrator.setOrientationLocked(false);
         integrator.setBeepEnabled(false);
-        integrator.setBarcodeImageEnabled(true);
         integrator.initiateScan();
-        */
-
-
-
 
         button1.setOnClickListener((v) -> { setScreenMain(); });
     }
