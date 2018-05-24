@@ -1,6 +1,8 @@
 package com.example.takahiro.omikuzi;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Rect;
@@ -25,14 +27,23 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity implements LocationListener{
-
+public class MainActivity extends AppCompatActivity implements LocationListener, GoogleApiClient.OnConnectionFailedListener {
     LocationManager locationManager;
+
+    private GoogleApiClient mGoogleApiClient;
+    private final int PLACE_PICKER_REQUEST = 1;
 
     private Button button1, button2, button3;
 
@@ -40,22 +51,28 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mGoogleApiClient = new GoogleApiClient
+                .Builder(this)
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .enableAutoManage(this, this)
+                .build();
+
+
         setScreenMain();
-
-
     }
 
     private void locationStart(){
         Log.d("debug","locationStart()");
 
-        // LocationManager 繧､繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ逕滓��
+        // LocationManager
         locationManager =
                 (LocationManager) getSystemService(LOCATION_SERVICE);
 
         if (locationManager != null && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             Log.d("debug", "location manager Enabled");
         } else {
-            // GPS繧定ｨｭ螳壹☆繧九ｈ縺�縺ｫ菫�縺�
+            // GPS
             Intent settingsIntent =
                     new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
             startActivity(settingsIntent);
@@ -76,8 +93,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                 1000, 50, this);
 
     }
-
-    // 邨先棡縺ｮ蜿励￠蜿悶ｊ
     /**
      * Android Quickstart:
      * https://developers.google.com/sheets/api/quickstart/android
@@ -93,16 +108,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     public void onRequestPermissionsResult(
             int requestCode, @NonNull String[]permissions, @NonNull int[] grantResults) {
         if (requestCode == 1000) {
-            // 菴ｿ逕ｨ縺瑚ｨｱ蜿ｯ縺輔ｌ縺�
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Log.d("debug","checkSelfPermission true");
 
                 locationStart();
 
             } else {
-                // 縺昴ｌ縺ｧ繧よ拠蜷ｦ縺輔ｌ縺滓凾縺ｮ蟇ｾ蠢�
                 Toast toast = Toast.makeText(this,
-                        "縺薙ｌ莉･荳翫↑縺ｫ繧ゅ〒縺阪∪縺帙ｓ", Toast.LENGTH_SHORT);
+                        "QR", Toast.LENGTH_SHORT);
                 toast.show();
             }
         }
@@ -126,12 +139,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
     @Override
     public void onLocationChanged(Location location) {
-        // 邱ｯ蠎ｦ縺ｮ陦ｨ遉ｺ
+
         TextView textView1 = (TextView) findViewById(R.id.text_view1);
         String str1 = "Latitude:"+location.getLatitude();
         textView1.setText(str1);
 
-        // 邨悟ｺｦ縺ｮ陦ｨ遉ｺ
         TextView textView2 = (TextView) findViewById(R.id.text_view2);
         String str2 = "Longtude:"+location.getLongitude();
         textView2.setText(str2);
@@ -154,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         button2 = (Button) findViewById(R.id.gpsButton);
 
         button1.setOnClickListener((v) -> { setScreenQR(); });
-        button2.setOnClickListener((v) -> { setScreenGPS(); });
+        button2.setOnClickListener((v) -> { setScreenPlaceAPI(); });
     }
 
     private void setScreenQR() {
@@ -162,7 +174,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
         button1 = (Button) findViewById(R.id.homeButtonQR);
 
-//        new IntentIntegrator(MainActivity.this).initiateScan();
         IntentIntegrator integrator = new IntentIntegrator(MainActivity.this);
         integrator.setOrientationLocked(false);
         integrator.setBeepEnabled(false);
@@ -194,6 +205,24 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         button1.setOnClickListener((v) -> { setScreenMain(); });
     }
 
+    private void setScreenPlaceAPI() {
+        setContentView(R.layout.activity_place_api);
+
+        button1 = (Button) findViewById(R.id.homeButtonPlaceAPI);
+
+
+        PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+        try {
+            startActivityForResult(builder.build(MainActivity.this), PLACE_PICKER_REQUEST);
+        } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
+            e.printStackTrace();
+        }
+
+
+
+        button1.setOnClickListener((v) -> { setScreenMain(); });
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -205,7 +234,41 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             Toast.makeText(this, "Scanned: " + scanResult.getContents(),Toast.LENGTH_LONG).show();
 
         }
+        else if (requestCode == PLACE_PICKER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                TextView pleceResult = (TextView) findViewById(R.id.result);
+                TextView name = (TextView) findViewById(R.id.name);
+                TextView address = (TextView) findViewById(R.id.address);
+
+                Place place = PlacePicker.getPlace( data, this );
+                // toastMsg = String.format( "Place: %s\n/%s", place.getName(), place.getAddress());
+                String placeData = String.format( "%s",place.toString() );
+                // Toast.makeText( this, toastMsg, Toast.LENGTH_LONG ).show();
+                pleceResult.setText(placeData);
+                name.setText(place.getName());
+                address.setText(place.getAddress());
+            } else {
+                Toast.makeText(this, "失敗:" + requestCode, Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    protected void onStop() {
+        mGoogleApiClient.disconnect();
+        super.onStop();
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
+
 }
 
