@@ -37,9 +37,10 @@ import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity implements LocationListener, GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     LocationManager locationManager;
 
     private GoogleApiClient mGoogleApiClient;
@@ -62,103 +63,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
 
         setScreenMain();
-    }
-
-    private void locationStart(){
-        Log.d("debug","locationStart()");
-
-        // LocationManager
-        locationManager =
-                (LocationManager) getSystemService(LOCATION_SERVICE);
-
-        if (locationManager != null && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            Log.d("debug", "location manager Enabled");
-        } else {
-            // GPS
-            Intent settingsIntent =
-                    new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivity(settingsIntent);
-            Log.d("debug", "not gpsEnable, startActivity");
-        }
-
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
-
-            Log.d("debug", "checkSelfPermission false");
-            return;
-        }
-
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                1000, 50, this);
-
-    }
-    /**
-     * Android Quickstart:
-     * https://developers.google.com/sheets/api/quickstart/android
-     *
-     * Respond to requests for permissions at runtime for API 23 and above.
-     * @param requestCode The request code passed in
-     *     requestPermissions(android.app.Activity, String, int, String[])
-     * @param permissions The requested permissions. Never null.
-     * @param grantResults The grant results for the corresponding permissions
-     *     which is either PERMISSION_GRANTED or PERMISSION_DENIED. Never null.
-     */
-    @Override
-    public void onRequestPermissionsResult(
-            int requestCode, @NonNull String[]permissions, @NonNull int[] grantResults) {
-        if (requestCode == 1000) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d("debug","checkSelfPermission true");
-
-                locationStart();
-
-            } else {
-                Toast toast = Toast.makeText(this,
-                        "QR", Toast.LENGTH_SHORT);
-                toast.show();
-            }
-        }
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        switch (status) {
-            case LocationProvider.AVAILABLE:
-                Log.d("debug", "LocationProvider.AVAILABLE");
-                break;
-            case LocationProvider.OUT_OF_SERVICE:
-                Log.d("debug", "LocationProvider.OUT_OF_SERVICE");
-                break;
-            case LocationProvider.TEMPORARILY_UNAVAILABLE:
-                Log.d("debug", "LocationProvider.TEMPORARILY_UNAVAILABLE");
-                break;
-        }
-    }
-
-
-    @Override
-    public void onLocationChanged(Location location) {
-
-        TextView textView1 = (TextView) findViewById(R.id.text_view1);
-        String str1 = "Latitude:"+location.getLatitude();
-        textView1.setText(str1);
-
-        TextView textView2 = (TextView) findViewById(R.id.text_view2);
-        String str2 = "Longtude:"+location.getLongitude();
-        textView2.setText(str2);
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
     }
 
     private void setScreenMain() {
@@ -184,29 +88,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         button1.setOnClickListener((v) -> { setScreenMain(); });
     }
 
-    private void setScreenGPS() {
-        setContentView(R.layout.activity_gps);
-
-        button1 = (Button) findViewById(R.id.homeButtonGPS);
-
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,},
-                    1000);
-        }
-        else{
-            locationStart();
-
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    1000, 50, this);
-
-        }
-
-        button1.setOnClickListener((v) -> { setScreenMain(); });
-    }
-
     private void setScreenPlaceAPI() {
         setContentView(R.layout.activity_place_api);
 
@@ -220,8 +101,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             e.printStackTrace();
         }
 
-
-
         button1.setOnClickListener((v) -> { setScreenMain(); });
     }
 
@@ -229,12 +108,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+
         if (scanResult != null) {
             TextView qResultView = (TextView) findViewById(R.id.qr_text_view);
             qResultView.setText(scanResult.getContents());
             Log.d("scan", "==-----:  " + scanResult.getContents());
             Toast.makeText(this, "Scanned: " + scanResult.getContents(),Toast.LENGTH_LONG).show();
-
+            setScreenPlaceAPI();
         }
         else if (requestCode == PLACE_PICKER_REQUEST) {
             if (resultCode == RESULT_OK) {
@@ -270,6 +150,24 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+    }
+
+    public void fileSave() {
+        String Union;
+        String day = "2000/1/1";
+        String place = "あいうえ神社";
+        String result = "大吉";
+        Union = '"' + "日時\"：" + '"' + day + "\",\r\n\t" +
+                '"' + "場所\"：" + '"' + place + "\",\r\n\t" +
+                '"' + "結果\"：" + '"' + result + "\",\r\n";
+        try {
+            FileOutputStream out = openFileOutput("omikuzi.txt", MODE_APPEND);
+            out.write("{\r\n\t".getBytes());
+            out.write(Union.getBytes());
+            out.write("}\r\n\t".getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
