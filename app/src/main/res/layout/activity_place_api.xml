@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+
+    <Button
+        android:id="@+id/homeButtonPlaceAPI"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignStart="@+id/text_view1"
+        android:layout_marginBottom="14dp"
+        android:text="HOME"
+        android:layout_alignLeft="@+id/text_view1" />
+
+    <TextView
+        android:id="@+id/result"
+        android:layout_width="290dp"
+        android:layout_height="275dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="206dp"
+        android:layout_marginEnd="33dp"
+        android:text="result data"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="33dp" />
+
+    <TextView
+        android:id="@+id/address"
+        android:layout_width="323dp"
+        android:layout_height="72dp"
+        android:layout_alignLeft="@+id/result"
+        android:layout_alignParentBottom="true"
+        android:layout_alignStart="@+id/result"
+        android:layout_marginBottom="75dp"
+        android:text="address"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="322dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignStart="@+id/result"
+        android:layout_marginBottom="167dp"
+        android:text="name"
+        android:textSize="18sp"
+        android:layout_alignLeft="@+id/result" />
+
+</RelativeLayout>
