@@ -24,7 +24,6 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    //noinspection GradleCompatible
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     testImplementation 'junit:junit:4.12'
@@ -32,4 +31,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'com.journeyapps:zxing-android-embedded:3.6.0'
     implementation 'com.google.android.gms:play-services-places:15.0.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.3.4'
 }

@@ -1,29 +1,13 @@
 package com.example.takahiro.omikuzi;
 
-import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Rect;
-import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,9 +20,18 @@ import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     LocationManager locationManager;
@@ -46,7 +39,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private GoogleApiClient mGoogleApiClient;
     private final int PLACE_PICKER_REQUEST = 1;
 
-    private Button button1, button2, button3;
+    private Button button1, button2;
+    private ObjectMapper mapper = new ObjectMapper();
+
+    EditText et;
+    Info info = new Info();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,10 +66,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         setContentView(R.layout.activity_main);
 
         button1 = (Button) findViewById(R.id.qrButton);
-        button2 = (Button) findViewById(R.id.gpsButton);
+        button2 = (Button) findViewById(R.id.dataButton);
 
         button1.setOnClickListener((v) -> { setScreenQR(); });
-        button2.setOnClickListener((v) -> { setScreenPlaceAPI(); });
+        button2.setOnClickListener((v) -> { setScreenViewData(); });
     }
 
     private void setScreenQR() {
@@ -93,7 +90,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         button1 = (Button) findViewById(R.id.homeButtonPlaceAPI);
 
-
         PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
         try {
             startActivityForResult(builder.build(MainActivity.this), PLACE_PICKER_REQUEST);
@@ -102,6 +98,35 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
 
         button1.setOnClickListener((v) -> { setScreenMain(); });
+    }
+
+    private void setScreenViewData() {
+        setContentView(R.layout.activity_view_data);
+
+        button1 = (Button) findViewById(R.id.homeButtonViewData);
+        button2 = (Button) findViewById(R.id.delete);
+        TextView viewData = (TextView) findViewById(R.id.data);
+
+
+        try {
+            JsonNode node = mapper.readTree(new File("omikuji.json"));
+
+            String view_day = node.get("day").asText();
+            String view_place = node.get("place").asText();
+            String view_result = node.get("result").asText();
+
+            et.append(view_day + view_place + view_result + "\n");
+            et.setText(view_day);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        viewData.setText(et.getText());
+
+
+
+        button1.setOnClickListener((v) -> { setScreenMain(); });
+        button2.setOnClickListener((v) -> { deleteFile( "omikuji.json" ); });
     }
 
     @Override
@@ -113,7 +138,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             TextView qResultView = (TextView) findViewById(R.id.qr_text_view);
             qResultView.setText(scanResult.getContents());
             Log.d("scan", "==-----:  " + scanResult.getContents());
-            Toast.makeText(this, "Scanned: " + scanResult.getContents(),Toast.LENGTH_LONG).show();
+//            Toast.makeText(this, "Scanned: " + scanResult.getContents(),Toast.LENGTH_LONG).show();
+            info.result = scanResult.getContents();
+
             setScreenPlaceAPI();
         }
         else if (requestCode == PLACE_PICKER_REQUEST) {
@@ -123,12 +150,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 TextView address = (TextView) findViewById(R.id.address);
 
                 Place place = PlacePicker.getPlace( data, this );
-                // toastMsg = String.format( "Place: %s\n/%s", place.getName(), place.getAddress());
                 String placeData = String.format( "%s",place.toString() );
-                // Toast.makeText( this, toastMsg, Toast.LENGTH_LONG ).show();
+
                 pleceResult.setText(placeData);
                 name.setText(place.getName());
                 address.setText(place.getAddress());
+
+                info.day = getNowDate();
+                info.place = place.getAddress().toString();
+
+                fileSave();
+
             } else {
                 Toast.makeText(this, "失敗:" + requestCode, Toast.LENGTH_LONG).show();
             }
@@ -152,19 +184,49 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     }
 
+    class Info {
+        public String day;
+        public String place;
+        public String result;
+    }
+
+    public static String getNowDate(){
+        final DateFormat df = new SimpleDateFormat("yyyy/MM/dd");
+        final Date date = new Date(System.currentTimeMillis());
+        return df.format(date);
+    }
+
     public void fileSave() {
-        String Union;
-        String day = "2000/1/1";
-        String place = "あいうえ神社";
-        String result = "大吉";
-        Union = '"' + "日時\"：" + '"' + day + "\",\r\n\t" +
-                '"' + "場所\"：" + '"' + place + "\",\r\n\t" +
-                '"' + "結果\"：" + '"' + result + "\",\r\n";
+        String Union = "\0";
+        String tmp= "\0";
+
+//        info.day    = "2000/1/1";
+//        info.place  = "あいうえ神社";
+//        info.result = "大吉";
+
+//        ObjectMapper mapper = new ObjectMapper();
+
+        try{
+            FileInputStream in = openFileInput( "omikuji.json" );
+            BufferedReader reader = new BufferedReader( new InputStreamReader( in , "UTF-8") );
+            String tmp2;
+
+            et.setText("");
+
+            while( (tmp2 = reader.readLine()) != null ){
+                tmp=tmp + tmp2;
+
+            }
+            reader.close();
+        }catch( IOException e ){
+            e.printStackTrace();
+        }
+
         try {
-            FileOutputStream out = openFileOutput("omikuzi.txt", MODE_APPEND);
-            out.write("{\r\n\t".getBytes());
-            out.write(Union.getBytes());
-            out.write("}\r\n\t".getBytes());
+            Union = mapper.writeValueAsString(info);
+            FileOutputStream out = openFileOutput( "omikuji.json", MODE_PRIVATE );
+            out.write( tmp.getBytes());
+            out.write( Union.getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }
