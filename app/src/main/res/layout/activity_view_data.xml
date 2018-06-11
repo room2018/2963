@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/data"
+        android:layout_width="361dp"
+        android:layout_height="416dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="15dp"
+        android:text="data"
+        android:textSize="18sp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="12dp" />
+
+    <Button
+        android:id="@+id/homeButtonViewData"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignStart="@+id/data"
+        android:layout_marginBottom="14dp"
+        android:text="HOME"
+        android:layout_alignLeft="@+id/data" />
+
+    <Button
+        android:id="@+id/delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/homeButtonViewData"
+        android:layout_alignEnd="@+id/data"
+        android:text="Delete"
+        android:layout_alignRight="@+id/data" />
+
+</RelativeLayout>

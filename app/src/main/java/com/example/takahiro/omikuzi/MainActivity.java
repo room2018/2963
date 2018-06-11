@@ -1,29 +1,13 @@
 package com.example.takahiro.omikuzi;
 
-import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Rect;
-import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,15 +21,26 @@ import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
-import java.io.IOException;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-public class MainActivity extends AppCompatActivity implements LocationListener, GoogleApiClient.OnConnectionFailedListener {
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     LocationManager locationManager;
 
     private GoogleApiClient mGoogleApiClient;
     private final int PLACE_PICKER_REQUEST = 1;
 
-    private Button button1, button2, button3;
+    private Button button1, button2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,115 +55,17 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 .enableAutoManage(this, this)
                 .build();
 
-
         setScreenMain();
-    }
-
-    private void locationStart(){
-        Log.d("debug","locationStart()");
-
-        // LocationManager
-        locationManager =
-                (LocationManager) getSystemService(LOCATION_SERVICE);
-
-        if (locationManager != null && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            Log.d("debug", "location manager Enabled");
-        } else {
-            // GPS
-            Intent settingsIntent =
-                    new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivity(settingsIntent);
-            Log.d("debug", "not gpsEnable, startActivity");
-        }
-
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
-
-            Log.d("debug", "checkSelfPermission false");
-            return;
-        }
-
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                1000, 50, this);
-
-    }
-    /**
-     * Android Quickstart:
-     * https://developers.google.com/sheets/api/quickstart/android
-     *
-     * Respond to requests for permissions at runtime for API 23 and above.
-     * @param requestCode The request code passed in
-     *     requestPermissions(android.app.Activity, String, int, String[])
-     * @param permissions The requested permissions. Never null.
-     * @param grantResults The grant results for the corresponding permissions
-     *     which is either PERMISSION_GRANTED or PERMISSION_DENIED. Never null.
-     */
-    @Override
-    public void onRequestPermissionsResult(
-            int requestCode, @NonNull String[]permissions, @NonNull int[] grantResults) {
-        if (requestCode == 1000) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d("debug","checkSelfPermission true");
-
-                locationStart();
-
-            } else {
-                Toast toast = Toast.makeText(this,
-                        "QR", Toast.LENGTH_SHORT);
-                toast.show();
-            }
-        }
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        switch (status) {
-            case LocationProvider.AVAILABLE:
-                Log.d("debug", "LocationProvider.AVAILABLE");
-                break;
-            case LocationProvider.OUT_OF_SERVICE:
-                Log.d("debug", "LocationProvider.OUT_OF_SERVICE");
-                break;
-            case LocationProvider.TEMPORARILY_UNAVAILABLE:
-                Log.d("debug", "LocationProvider.TEMPORARILY_UNAVAILABLE");
-                break;
-        }
-    }
-
-
-    @Override
-    public void onLocationChanged(Location location) {
-
-        TextView textView1 = (TextView) findViewById(R.id.text_view1);
-        String str1 = "Latitude:"+location.getLatitude();
-        textView1.setText(str1);
-
-        TextView textView2 = (TextView) findViewById(R.id.text_view2);
-        String str2 = "Longtude:"+location.getLongitude();
-        textView2.setText(str2);
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
     }
 
     private void setScreenMain() {
         setContentView(R.layout.activity_main);
 
         button1 = (Button) findViewById(R.id.qrButton);
-        button2 = (Button) findViewById(R.id.gpsButton);
+        button2 = (Button) findViewById(R.id.dataButton);
 
         button1.setOnClickListener((v) -> { setScreenQR(); });
-        button2.setOnClickListener((v) -> { setScreenPlaceAPI(); });
+        button2.setOnClickListener((v) -> { setScreenViewData(); });
     }
 
     private void setScreenQR() {
@@ -184,34 +81,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         button1.setOnClickListener((v) -> { setScreenMain(); });
     }
 
-    private void setScreenGPS() {
-        setContentView(R.layout.activity_gps);
-
-        button1 = (Button) findViewById(R.id.homeButtonGPS);
-
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,},
-                    1000);
-        }
-        else{
-            locationStart();
-
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    1000, 50, this);
-
-        }
-
-        button1.setOnClickListener((v) -> { setScreenMain(); });
-    }
-
     private void setScreenPlaceAPI() {
         setContentView(R.layout.activity_place_api);
 
         button1 = (Button) findViewById(R.id.homeButtonPlaceAPI);
-
 
         PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
         try {
@@ -220,21 +93,67 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             e.printStackTrace();
         }
 
+        button1.setOnClickListener((v) -> { setScreenMain(); });
+    }
 
+    private void setScreenViewData() {
+        setContentView(R.layout.activity_view_data);
+
+        button1 = (Button) findViewById(R.id.homeButtonViewData);
+        button2 = (Button) findViewById(R.id.delete);
+        TextView viewData = (TextView) findViewById(R.id.data);
+
+        String viewDay = null;
+        String viewPlace = null;
+        String viewResult = null;
+        String data = null;
+
+        try {
+            FileInputStream input = openFileInput("omikuji.json");
+            BufferedReader inputText = new BufferedReader(new InputStreamReader(input));
+
+            JSONArray jsonArray = new JSONArray(inputText.readLine());
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject json = jsonArray.getJSONObject(i);
+
+                viewDay = json.getString("day");
+                viewPlace = json.getString("place");
+                viewResult = json.getString("result");
+
+                Log.d("omikuji", viewDay);
+                Log.d("omikuji", viewPlace);
+                Log.d("omikuji", viewResult);
+
+                data = data + viewDay + viewPlace + viewResult + "\n";
+            }
+            viewData.setText(data);
+
+            inputText.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         button1.setOnClickListener((v) -> { setScreenMain(); });
+        button2.setOnClickListener((v) -> { deleteFile( "omikuji.json" ); });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+
+        Info info = new Info();
+
         if (scanResult != null) {
             TextView qResultView = (TextView) findViewById(R.id.qr_text_view);
             qResultView.setText(scanResult.getContents());
             Log.d("scan", "==-----:  " + scanResult.getContents());
-            Toast.makeText(this, "Scanned: " + scanResult.getContents(),Toast.LENGTH_LONG).show();
+            info.result = scanResult.getContents();
 
+            setScreenPlaceAPI();
         }
         else if (requestCode == PLACE_PICKER_REQUEST) {
             if (resultCode == RESULT_OK) {
@@ -243,12 +162,16 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 TextView address = (TextView) findViewById(R.id.address);
 
                 Place place = PlacePicker.getPlace( data, this );
-                // toastMsg = String.format( "Place: %s\n/%s", place.getName(), place.getAddress());
                 String placeData = String.format( "%s",place.toString() );
-                // Toast.makeText( this, toastMsg, Toast.LENGTH_LONG ).show();
+
                 pleceResult.setText(placeData);
                 name.setText(place.getName());
                 address.setText(place.getAddress());
+
+                info.day = getNowDate();
+                info.place = place.getAddress().toString();
+
+                fileSave(info);
             } else {
                 Toast.makeText(this, "失敗:" + requestCode, Toast.LENGTH_LONG).show();
             }
@@ -270,6 +193,48 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+    }
+
+    class Info {
+        public String day;
+        public String place;
+        public String result;
+    }
+
+    public static String getNowDate(){
+        final DateFormat df = new SimpleDateFormat("yyyy/MM/dd");
+        final Date date = new Date(System.currentTimeMillis());
+        return df.format(date);
+    }
+
+    public void fileSave(Info info) {
+        String oldData = null;
+
+        try{
+            FileInputStream in = openFileInput( "omikuji.json" );
+            BufferedReader reader = new BufferedReader( new InputStreamReader( in , "UTF-8") );
+
+            oldData = reader.readLine();
+            Log.d("aaa", "fileSave: " +  oldData);
+
+            reader.close();
+        }catch( IOException e ){
+            e.printStackTrace();
+        }
+        try {
+            FileOutputStream out = openFileOutput( "omikuji.json", MODE_APPEND );
+            Log.d("aaa", info.day + info.place + info.result);
+
+            out.write( oldData.getBytes());
+            out.write("[{\"day\":\"2018/06/08\",\"place\":\"日本、〒918-8231 福井県福井市問屋町３丁目６０９\",\"result\":\"だいきちぃ～\"}],".getBytes());
+            out.write(( "[{\"day\":\"" + info.day +
+                    "\",\"place\":\"" + info.place +
+                    "\",\"result\":\"" + info.result + "\"}]," ).getBytes());
+
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
