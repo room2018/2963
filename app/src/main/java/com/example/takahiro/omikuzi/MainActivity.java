@@ -227,9 +227,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
             out.write( oldData.getBytes());
             out.write("[{\"day\":\"2018/06/08\",\"place\":\"日本、〒918-8231 福井県福井市問屋町３丁目６０９\",\"result\":\"だいきちぃ～\"}],".getBytes());
-            out.write(( " [{\"day\":\" " + info.day +
-                    " \",\"place\":\" " + info.place +
-                    " \",\"result\":\" " + info.result + " \"}], " ).getBytes());
+            out.write(( "[{\"day\":\"" + info.day +
+                    "\",\"place\":\"" + info.place +
+                    "\",\"result\":\"" + info.result + "\"}]," ).getBytes());
 
             out.close();
         } catch (IOException e) {
