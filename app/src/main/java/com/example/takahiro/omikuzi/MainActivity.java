@@ -26,7 +26,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -42,10 +41,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private final int PLACE_PICKER_REQUEST = 1;
 
     private Button button1, button2;
-//    private ObjectMapper mapper = new ObjectMapper();
-
-    EditText et;
-    Info info = new Info();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +54,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 .addApi(Places.PLACE_DETECTION_API)
                 .enableAutoManage(this, this)
                 .build();
-
 
         setScreenMain();
     }
@@ -112,50 +106,35 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         String viewDay = null;
         String viewPlace = null;
         String viewResult = null;
-                
-
+        String data = null;
 
         try {
             FileInputStream input = openFileInput("omikuji.json");
             BufferedReader inputText = new BufferedReader(new InputStreamReader(input));
 
-            JSONArray jsona = new JSONArray(inputText.readLine());
-            JSONObject json = jsona.getJSONObject(0);
+            JSONArray jsonArray = new JSONArray(inputText.readLine());
 
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject json = jsonArray.getJSONObject(i);
 
-            viewDay = json.getString("day");
-            viewPlace = json.getString("place");
-            viewResult = json.getString("result");
+                viewDay = json.getString("day");
+                viewPlace = json.getString("place");
+                viewResult = json.getString("result");
 
+                Log.d("omikuji", viewDay);
+                Log.d("omikuji", viewPlace);
+                Log.d("omikuji", viewResult);
 
-            Log.d("aaa", viewDay);
-            Log.d("aaa", viewPlace);
-            Log.d("aaa", viewResult);
+                data = data + viewDay + viewPlace + viewResult + "\n";
+            }
+            viewData.setText(data);
 
-            viewData.setText(viewDay + viewPlace + viewResult + "\n");
-
-
-//            et.append(viewDay + viewPlace + viewResult + "\n");
-//            et.setText(viewDay);
-            /*
-            JsonNode node = mapper.readTree(new File("omikuji.json"));
-
-            String view_day = node.get("day").asText();
-            String view_place = node.get("place").asText();
-            String view_result = node.get("result").asText();
-
-
-            et.append(view_day + view_place + view_result + "\n");
-            et.setText(view_day);
-            */
+            inputText.close();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-
-
 
         button1.setOnClickListener((v) -> { setScreenMain(); });
         button2.setOnClickListener((v) -> { deleteFile( "omikuji.json" ); });
@@ -166,11 +145,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         super.onActivityResult(requestCode, resultCode, data);
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
 
+        Info info = new Info();
+
         if (scanResult != null) {
             TextView qResultView = (TextView) findViewById(R.id.qr_text_view);
             qResultView.setText(scanResult.getContents());
             Log.d("scan", "==-----:  " + scanResult.getContents());
-//            Toast.makeText(this, "Scanned: " + scanResult.getContents(),Toast.LENGTH_LONG).show();
             info.result = scanResult.getContents();
 
             setScreenPlaceAPI();
@@ -191,8 +171,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 info.day = getNowDate();
                 info.place = place.getAddress().toString();
 
-                fileSave();
-
+                fileSave(info);
             } else {
                 Toast.makeText(this, "失敗:" + requestCode, Toast.LENGTH_LONG).show();
             }
@@ -228,38 +207,31 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         return df.format(date);
     }
 
-    public void fileSave() {
-        String Union = "\0";
-        String tmp= "\0";
-
-//        info.day    = "2000/1/1";
-//        info.place  = "あいうえ神社";
-//        info.result = "大吉";
-
-//        ObjectMapper mapper = new ObjectMapper();
+    public void fileSave(Info info) {
+        String oldData = null;
 
         try{
             FileInputStream in = openFileInput( "omikuji.json" );
             BufferedReader reader = new BufferedReader( new InputStreamReader( in , "UTF-8") );
-            String tmp2;
 
-//            et.setText("");
+            oldData = reader.readLine();
+            Log.d("aaa", "fileSave: " +  oldData);
 
-            while( (tmp2 = reader.readLine()) != null ){
-                tmp=tmp + tmp2;
-
-            }
             reader.close();
         }catch( IOException e ){
             e.printStackTrace();
         }
-
         try {
-//            Union = mapper.writeValueAsString(info);
-            FileOutputStream out = openFileOutput( "omikuji.json", MODE_PRIVATE );
-//            out.write( tmp.getBytes());
-//            out.write( Union.getBytes());
-            out.write("[{\"day\":\"2018/06/08\",\"place\":\"日本、〒918-8231 福井県福井市問屋町３丁目６０９\",\"result\":\"だいきちぃ～\"}]".getBytes());
+            FileOutputStream out = openFileOutput( "omikuji.json", MODE_APPEND );
+            Log.d("aaa", info.day + info.place + info.result);
+
+            out.write( oldData.getBytes());
+            out.write("[{\"day\":\"2018/06/08\",\"place\":\"日本、〒918-8231 福井県福井市問屋町３丁目６０９\",\"result\":\"だいきちぃ～\"}],".getBytes());
+            out.write(( " [{\"day\":\" " + info.day +
+                    " \",\"place\":\" " + info.place +
+                    " \",\"result\":\" " + info.result + " \"}], " ).getBytes());
+
+            out.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
