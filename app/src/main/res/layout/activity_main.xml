@@ -7,14 +7,14 @@
     tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/gpsButton"
+        android:id="@+id/dataButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
         android:layout_marginBottom="69dp"
         android:layout_marginStart="46dp"
-        android:text="GPS"
+        android:text="Data"
         tools:ignore="MissingConstraints"
         tools:layout_editor_absoluteX="45dp"
         tools:layout_editor_absoluteY="398dp"
@@ -26,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_alignTop="@+id/gpsButton"
+        android:layout_alignTop="@+id/dataButton"
         android:layout_marginEnd="46dp"
         android:text="QR"
         tools:ignore="MissingConstraints"
