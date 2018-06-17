@@ -209,32 +209,69 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     public void fileSave(Info info) {
         String oldData = null;
+        String oo = null;
+        String t_day = null;
+        String t_place = null;
+        String t_result = null;
+        JSONObject obj = new JSONObject();
+        int flag=0;
 
         try{
-            FileInputStream in = openFileInput( "omikuji.json" );
-            BufferedReader reader = new BufferedReader( new InputStreamReader( in , "UTF-8") );
+            FileInputStream input = openFileInput("omikuji.json");
+            BufferedReader inputtext = new BufferedReader(new InputStreamReader(input));
 
-            oldData = reader.readLine();
-            Log.d("aaa", "fileSave: " +  oldData);
+            JSONArray jsonArray = new JSONArray(inputtext.readLine());
+            /*for (int i = 0; i < jsonArray.length(); i++) {
+                flag = 0;
+                JSONObject json = jsonArray.getJSONObject(i);
 
-            reader.close();
+                t_day = json.getString("day");
+                t_place = json.getString("place");
+                t_result = json.getString("result");
+
+                obj.put("day",t_day);
+                obj.put("place",t_place);
+                obj.put("result",t_result);
+            }
+            //oldData = inputText.readLine();
+            Log.d("aaa", "fileSave: " +  oldData);*/
+            inputtext.close();
         }catch( IOException e ){
             e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+
         try {
             FileOutputStream out = openFileOutput( "omikuji.json", MODE_APPEND );
             Log.d("aaa", info.day + info.place + info.result);
-
-            out.write( oldData.getBytes());
-            out.write("[{\"day\":\"2018/06/08\",\"place\":\"日本、〒918-8231 福井県福井市問屋町３丁目６０９\",\"result\":\"だいきちぃ～\"}],".getBytes());
-            out.write(( "[{\"day\":\"" + info.day +
+           if(flag==0) {
+               oo = "[{\"day\":\"2018/06/08\",\"place\":\"日本、〒918-8231 福井県福井市問屋町３丁目６０９\",\"result\":\"だいきちぃ～\"}],";
+               //out.write(oldData.getBytes());
+               out.write(oo.getBytes());
+            /*out.write(( "[{\"day\":\"" + info.day +
                     "\",\"place\":\"" + info.place +
-                    "\",\"result\":\"" + info.result + "\"}]," ).getBytes());
+                    "\",\"result\":\"" + info.result + "\"}]," ).getBytes());*/
 
-            out.close();
+               out.close();
+           }/*else{
+               obj.put("day","aiueo");
+               obj.put("place","kakikukeko");
+               obj.put("result","sasisuseso");
+
+               String a = obj.toString();
+
+               out.write(a.getBytes());
+               out.close();
+           }*/
+
+
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        } /*catch (JSONException e) {
+            e.printStackTrace();
+        }*/
+
     }
 
 }
