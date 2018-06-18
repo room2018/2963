@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         String viewDay = null;
         String viewPlace = null;
         String viewResult = null;
-        String data = null;
+        String data = "";
 
         try {
             FileInputStream input = openFileInput("omikuji.json");
@@ -208,23 +208,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     public void fileSave(Info info) {
-        String oldData = null;
-        String oo = null;
-        String t_day = null;
-        String t_place = null;
-        String t_result = null;
+        String make;
+        String t_day = "";
+        String t_place = "";
+        String t_result = "";
+        String union = "";
         JSONObject obj = new JSONObject();
         int flag=0;
-
         try{
             FileInputStream input = openFileInput("omikuji.json");
             BufferedReader inputtext = new BufferedReader(new InputStreamReader(input));
-
             JSONArray jsonArray = new JSONArray(inputtext.readLine());
-            /*for (int i = 0; i < jsonArray.length(); i++) {
-                flag = 0;
-                JSONObject json = jsonArray.getJSONObject(i);
 
+            for (int i = 0; i < jsonArray.length(); i++) {
+                flag = 1;
+                JSONObject json = jsonArray.getJSONObject(i);
                 t_day = json.getString("day");
                 t_place = json.getString("place");
                 t_result = json.getString("result");
@@ -232,10 +230,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 obj.put("day",t_day);
                 obj.put("place",t_place);
                 obj.put("result",t_result);
+                    union += obj.toString();
+                    union += ",";
             }
-            //oldData = inputText.readLine();
-            Log.d("aaa", "fileSave: " +  oldData);*/
             inputtext.close();
+            input.close();
         }catch( IOException e ){
             e.printStackTrace();
         } catch (JSONException e) {
@@ -243,34 +242,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
 
         try {
+            deleteFile( "omikuji.json" );
             FileOutputStream out = openFileOutput( "omikuji.json", MODE_APPEND );
-            Log.d("aaa", info.day + info.place + info.result);
            if(flag==0) {
-               oo = "[{\"day\":\"2018/06/08\",\"place\":\"日本、〒918-8231 福井県福井市問屋町３丁目６０９\",\"result\":\"だいきちぃ～\"}],";
-               //out.write(oldData.getBytes());
-               out.write(oo.getBytes());
-            /*out.write(( "[{\"day\":\"" + info.day +
-                    "\",\"place\":\"" + info.place +
-                    "\",\"result\":\"" + info.result + "\"}]," ).getBytes());*/
-
+               make = "[{\"day\":\"2018/06/08\",\"place\":\"日本\",\"result\":\"だいききょー\"}]";
+               out.write(make.getBytes());
                out.close();
-           }/*else{
-               obj.put("day","aiueo");
-               obj.put("place","kakikukeko");
-               obj.put("result","sasisuseso");
-
-               String a = obj.toString();
-
-               out.write(a.getBytes());
+           }else{
+               obj.put("day","あいうえお");
+               obj.put("place","かきくけこ");
+               obj.put("result","さしすせそ");
+               //union +=  obj.toString(); パースしても可
+               union += "{\"day\":\"2018/06/08\",\"place\":\"アメリカ\",\"result\":\"だいきち\"}";
+               union = "[" + union + "]";
+               out.write(union.getBytes());
                out.close();
-           }*/
-
-
-        } catch (IOException e) {
+               Log.d("aiueo", union);
+           }
+        }catch (IOException e) {
             e.printStackTrace();
-        } /*catch (JSONException e) {
+        }catch (JSONException e) {
             e.printStackTrace();
-        }*/
+        }
 
     }
 
