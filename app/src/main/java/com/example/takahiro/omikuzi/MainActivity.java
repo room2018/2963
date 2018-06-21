@@ -152,7 +152,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             qResultView.setText(scanResult.getContents());
             Log.d("scan", "==-----:  " + scanResult.getContents());
             info.result = scanResult.getContents();
-
             setScreenPlaceAPI();
         }
         else if (requestCode == PLACE_PICKER_REQUEST) {
@@ -208,17 +207,35 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     public void fileSave(Info info) {
+
+        String pre[] = new String[3];
+
+        pre[0] = "{\"day\":\"2018/06/08\",\"place\":\"アメリカ\",\"result\":\"すえきち\"}";
+        pre[1] = "{\"day\":\"2018/06/08\",\"place\":\"アフリカ\",\"result\":\"きち\"}";
+        pre[2] = "{\"day\":\"2018/06/08\",\"place\":\"にっぽん\",\"result\":\"だいきち\"}";
+
         String make;
         String t_day = "";
         String t_place = "";
         String t_result = "";
         String union = "";
+        int num = 0;
         JSONObject obj = new JSONObject();
         int flag=0;
+
+
         try{
             FileInputStream input = openFileInput("omikuji.json");
             BufferedReader inputtext = new BufferedReader(new InputStreamReader(input));
             JSONArray jsonArray = new JSONArray(inputtext.readLine());
+
+            if(info.result == "0"){
+                num = 0;
+            }else if(info.result == "1"){
+                num = 1;
+            }else if(info.result == "2"){
+                num = 2;
+            }
 
             for (int i = 0; i < jsonArray.length(); i++) {
                 flag = 1;
@@ -230,8 +247,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 obj.put("day",t_day);
                 obj.put("place",t_place);
                 obj.put("result",t_result);
-                    union += obj.toString();
-                    union += ",";
+                union += obj.toString();
+                union += ",";
             }
             inputtext.close();
             input.close();
@@ -244,21 +261,32 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         try {
             deleteFile( "omikuji.json" );
             FileOutputStream out = openFileOutput( "omikuji.json", MODE_APPEND );
-           if(flag==0) {
-               make = "[{\"day\":\"2018/06/08\",\"place\":\"日本\",\"result\":\"だいききょー\"}]";
-               out.write(make.getBytes());
-               out.close();
-           }else{
-               obj.put("day","あいうえお");
-               obj.put("place","かきくけこ");
-               obj.put("result","さしすせそ");
-               //union +=  obj.toString(); パースしても可
-               union += "{\"day\":\"2018/06/08\",\"place\":\"アメリカ\",\"result\":\"だいきち\"}";
-               union = "[" + union + "]";
-               out.write(union.getBytes());
-               out.close();
-               Log.d("aiueo", union);
-           }
+
+            if(info.result == "0"){
+                num = 0;
+            }else if(info.result == "1"){
+                num = 1;
+            }else if(info.result == "2"){
+                num = 2;
+            }
+
+            if(flag==0) {
+                make = "["+pre[num]+"]";
+                //make = "[{\"day\":\"2018/06/08\",\"place\":\"日本\",\"result\":\"だいききょー\"}]";
+                out.write(make.getBytes());
+                out.close();
+            }else{
+                obj.put("day","あいうえお");
+                obj.put("place","かきくけこ");
+                obj.put("result","さしすせそ");
+                //union +=  obj.toString(); パースしても可
+                //union += "{\"day\":\"2018/06/08\",\"place\":\"アメリカ\",\"result\":\"だいきち\"}";
+                union += pre[num];
+                union = "[" + union + "]";
+                out.write(union.getBytes());
+                out.close();
+                Log.d("aiueo", union);
+            }
         }catch (IOException e) {
             e.printStackTrace();
         }catch (JSONException e) {
@@ -268,4 +296,3 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
 }
-
