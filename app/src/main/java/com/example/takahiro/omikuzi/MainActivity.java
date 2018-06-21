@@ -8,9 +8,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.beardedhen.androidbootstrap.BootstrapButton;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -61,11 +63,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private void setScreenMain() {
         setContentView(R.layout.activity_main);
 
+//        BootstrapButton btn = findViewById(R.id.bootstrap_button);
+
         button1 = (Button) findViewById(R.id.qrButton);
         button2 = (Button) findViewById(R.id.dataButton);
 
         button1.setOnClickListener((v) -> { setScreenQR(); });
         button2.setOnClickListener((v) -> { setScreenViewData(); });
+
+//        btn.setOnClickListener((v) -> { Toast.makeText(this, "bootstrap", Toast.LENGTH_LONG).show();});
     }
 
     private void setScreenQR() {
@@ -101,7 +107,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         button1 = (Button) findViewById(R.id.homeButtonViewData);
         button2 = (Button) findViewById(R.id.delete);
-        TextView viewData = (TextView) findViewById(R.id.data);
+
+        ScrollView scrollView = this.<ScrollView>findViewById(R.id.scroll);
+
+//        TextView viewData = (TextView) findViewById(R.id.data);
 
         String viewDay = null;
         String viewPlace = null;
@@ -111,6 +120,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         try {
             FileInputStream input = openFileInput("omikuji.json");
             BufferedReader inputText = new BufferedReader(new InputStreamReader(input));
+
+
 
             JSONArray jsonArray = new JSONArray(inputText.readLine());
 
@@ -125,9 +136,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 Log.d("omikuji", viewPlace);
                 Log.d("omikuji", viewResult);
 
-                data = data + viewDay + viewPlace + viewResult + "\n";
+                data = viewDay + " " + viewPlace + " " + viewResult + "\n";
+
+                BootstrapButton btn = new BootstrapButton(this);
+
+//                btn.setText(data);
+
+//                scrollView.addView(btn);
             }
-            viewData.setText(data);
+//            viewData.setText(data);
 
             inputText.close();
         } catch (IOException e) {
