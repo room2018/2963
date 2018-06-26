@@ -15,8 +15,7 @@
         android:layout_height="48dp"
         android:layout_below="@+id/camera_preview"
         android:layout_centerHorizontal="true"
-        android:textSize="30sp"
-        android:text="TextView" />
+        android:textSize="30sp" />
 
     <Button
         android:id="@+id/homeButtonQR"

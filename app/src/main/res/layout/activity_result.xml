@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ff6868">
+
+    <TextView
+        android:id="@+id/place"
+        android:layout_width="355dp"
+        android:layout_height="67dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignStart="@+id/endan"
+        android:layout_marginBottom="80dp"
+        android:text="ところ"
+        android:textColor="@color/bootstrap_brand_secondary_fill"
+        android:textSize="24sp"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="213dp"
+        tools:layout_editor_absoluteY="509dp"
+        android:layout_alignLeft="@+id/endan" />
+
+    <TextView
+        android:id="@+id/endan"
+        android:layout_width="355dp"
+        android:layout_height="59dp"
+        android:layout_below="@+id/renai"
+        android:layout_centerHorizontal="true"
+        android:text="縁談"
+        android:textColor="@color/bootstrap_brand_secondary_fill"
+        android:textSize="24sp"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="73dp"
+        tools:layout_editor_absoluteY="444dp" />
+
+    <TextView
+        android:id="@+id/taibou"
+        android:layout_width="355dp"
+        android:layout_height="64dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="160dp"
+        android:text="願望"
+        android:textColor="@color/bootstrap_brand_secondary_fill"
+        android:textSize="24sp"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="73dp"
+        tools:layout_editor_absoluteY="189dp" />
+
+    <TextView
+        android:id="@+id/kekka"
+        android:layout_width="159dp"
+        android:layout_height="62dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="21dp"
+        android:gravity="center_horizontal"
+        android:text="結果"
+        android:textColor="@color/bootstrap_brand_secondary_fill"
+        android:textSize="36sp"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="113dp"
+        tools:layout_editor_absoluteY="16dp" />
+
+    <TextView
+        android:id="@+id/renai"
+        android:layout_width="355dp"
+        android:layout_height="59dp"
+        android:layout_below="@+id/machibito"
+        android:layout_centerHorizontal="true"
+        android:text="恋愛"
+        android:textColor="@color/bootstrap_brand_secondary_fill"
+        android:textSize="24sp"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="73dp"
+        tools:layout_editor_absoluteY="365dp" />
+
+    <TextView
+        android:id="@+id/machibito"
+        android:layout_width="355dp"
+        android:layout_height="57dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="226dp"
+        android:text="待人"
+        android:textColor="@color/bootstrap_brand_secondary_fill"
+        android:textSize="24sp"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="73dp"
+        tools:layout_editor_absoluteY="277dp" />
+
+    <TextView
+        android:id="@+id/date"
+        android:layout_width="132dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="96dp"
+        android:gravity="center_horizontal"
+        android:text="Date"
+        android:textColor="@color/bootstrap_brand_secondary_fill"
+        android:textSize="24sp"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="126dp"
+        tools:layout_editor_absoluteY="107dp" />
+
+    <Button
+        android:id="@+id/back_result"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="32dp"
+        android:layout_marginStart="26dp"
+        android:text="Back"
+        tools:layout_editor_absoluteX="37dp"
+        tools:layout_editor_absoluteY="502dp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="26dp" />
+
+</RelativeLayout>
