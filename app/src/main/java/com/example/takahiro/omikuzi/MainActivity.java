@@ -1,18 +1,27 @@
 package com.example.takahiro.omikuzi;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.beardedhen.androidbootstrap.BootstrapButton;
+import com.beardedhen.androidbootstrap.BootstrapText;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -29,6 +38,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -43,6 +53,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private final int PLACE_PICKER_REQUEST = 1;
 
     private Button button1, button2;
+    private ImageView view, read;
+
+    JSONArray resultData = null;
+
+    Info info = new Info();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,15 +78,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private void setScreenMain() {
         setContentView(R.layout.activity_main);
 
-//        BootstrapButton btn = findViewById(R.id.bootstrap_button);
+        view = findViewById(R.id.viewBtn);
+        read = findViewById(R.id.readBtn);
 
-        button1 = (Button) findViewById(R.id.qrButton);
-        button2 = (Button) findViewById(R.id.dataButton);
-
-        button1.setOnClickListener((v) -> { setScreenQR(); });
-        button2.setOnClickListener((v) -> { setScreenViewData(); });
-
-//        btn.setOnClickListener((v) -> { Toast.makeText(this, "bootstrap", Toast.LENGTH_LONG).show();});
+        read.setOnClickListener((v) -> { setScreenQR(); });
+        view.setOnClickListener((v) -> { setScreenViewData(); });
     }
 
     private void setScreenQR() {
@@ -104,16 +115,82 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     private void setScreenViewData() {
         setContentView(R.layout.activity_view_data);
+        resultData = null;
 
         button1 = (Button) findViewById(R.id.homeButtonViewData);
         button2 = (Button) findViewById(R.id.delete);
 
-        ScrollView scrollView = this.<ScrollView>findViewById(R.id.scroll);
+        String resultString = "[\n" +
+                "    {\n" +
+                "        \"id\": \"0\",\n" +
+                "        \"結果\": \"大吉\",\n" +
+                "        \"願望\": \"目上の人の助を得て思わず早く調う\",\n" +
+                "        \"待人\": \"早く来る\",\n" +
+                "        \"恋愛\": \"誠意を尽して接せよ\",\n" +
+                "        \"縁談\": \"他人の言うまゝにしてよし必ず叶う\",\n" +
+                "        \"お産\": \"肥立もよく　安し\",\n" +
+                "        \"進学\": \"安心して勉学せよ\",\n" +
+                "        \"就職\": \"早めにすれば叶う\",\n" +
+                "        \"家庭\": \"開運は家庭の団楽にあり\",\n" +
+                "        \"病気\": \"すべて信心でなおる\",\n" +
+                "        \"旅行\": \"行先に利得あり\",\n" +
+                "        \"事業\": \"金運あり　お祈りせよ\",\n" +
+                "        \"訴訟\": \"恨みを抱くと負けます\",\n" +
+                "        \"転居\": \"移りなさい　良事あり\",\n" +
+                "        \"失物\": \"早く出る　物の間\",\n" +
+                "        \"相場（賭）\": \"見合わせ今が大切\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "        \"id\": \"1\",\n" +
+                "        \"結果\": \"末吉\",\n" +
+                "        \"願望\": \"のぞみのまゝです　人の言葉に迷うな\",\n" +
+                "        \"待人\": \"音信なし　来る\",\n" +
+                "        \"恋愛\": \"この人より他になし\",\n" +
+                "        \"縁談\": \"多くて困ることあり　静かに心を定めなさい\",\n" +
+                "        \"お産\": \"やすし　安心せよ\",\n" +
+                "        \"進学\": \"少し無理をしなさい\",\n" +
+                "        \"就職\": \"早く見るけるが吉\",\n" +
+                "        \"家庭\": \"持てません\",\n" +
+                "        \"病気\": \"早く全快します\",\n" +
+                "        \"旅行\": \"よし　連の人に注意\",\n" +
+                "        \"事業\": \"利益あり進んで吉\",\n" +
+                "        \"訴訟\": \"恨みを抱くと負けます\",\n" +
+                "        \"転居\": \"移りなさい　良事あり\",\n" +
+                "        \"失物\": \"家の中にはない　外で見つかる\",\n" +
+                "        \"相場（賭）\": \"買え　今が最上\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "        \"id\": \"2\",\n" +
+                "        \"結果\": \"凶\",\n" +
+                "        \"願望\": \"叶いにくい\",\n" +
+                "        \"待人\": \"現れない\",\n" +
+                "        \"恋愛\": \"悪い結果を招く\",\n" +
+                "        \"縁談\": \"全て良くならない\",\n" +
+                "        \"お産\": \"肥立もよく　安し\",\n" +
+                "        \"進学\": \"目上の人の意見に従え\",\n" +
+                "        \"就職\": \"望みを下げろ\",\n" +
+                "        \"家庭\": \"良い家庭は望むものでなく築くもの\",\n" +
+                "        \"病気\": \"おぼつかない\",\n" +
+                "        \"旅行\": \"病気、火難に注意\",\n" +
+                "        \"事業\": \"人の口車に乗るな\",\n" +
+                "        \"訴訟\": \"恨みを抱くと負けます\",\n" +
+                "        \"転居\": \"今のままよし\",\n" +
+                "        \"失物\": \"出にくいでしょう\",\n" +
+                "        \"相場（賭）\": \"やめた方がよい\"\n" +
+                "    }\n" +
+                "]";
 
-//        TextView viewData = (TextView) findViewById(R.id.data);
+        try {
+            resultData = new JSONArray(resultString);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        LinearLayout linearLayout = findViewById(R.id.scrollLinear);
 
         String viewDay = null;
         String viewPlace = null;
+        String resultID = null;
         String viewResult = null;
         String data = null;
 
@@ -121,16 +198,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             FileInputStream input = openFileInput("omikuji.json");
             BufferedReader inputText = new BufferedReader(new InputStreamReader(input));
 
-
-
             JSONArray jsonArray = new JSONArray(inputText.readLine());
+            
+            input.close();
+            inputText.close();
 
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject json = jsonArray.getJSONObject(i);
 
                 viewDay = json.getString("day");
                 viewPlace = json.getString("place");
-                viewResult = json.getString("result");
+                resultID = json.getString("result");
+
+                JSONObject rData = resultData.getJSONObject(Integer.parseInt(resultID));
+                viewResult = rData.getString("結果");
+
 
                 Log.d("omikuji", viewDay);
                 Log.d("omikuji", viewPlace);
@@ -140,11 +222,59 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
                 BootstrapButton btn = new BootstrapButton(this);
 
-//                btn.setText(data);
+                btn.setBackgroundColor(Color.rgb(255, 104, 104));
+                btn.setHighlightColor(Color.rgb(255, 104, 104));
+                btn.setTextColor(Color.rgb(255, 104, 104));
+                btn.setBootstrapSize((float) 1.5);
 
-//                scrollView.addView(btn);
+                btn.setBootstrapText((new BootstrapText.Builder(this, true)).
+                        addFontAwesomeIcon("fa_check").
+                        addText(viewDay + " \n").
+                        addText(viewPlace + " \n").
+                        addText(viewResult + " ").
+                        build());
+
+                linearLayout.addView(btn);
+
+                String finalResultID = resultID;
+                String finalViewPlace = viewPlace;
+                String finalViewDay = viewDay;
+                String finalViewResult = viewResult;
+                btn.setOnClickListener((View v) -> {
+                    setContentView(R.layout.activity_result);
+                    button1 = findViewById(R.id.back_result);
+
+                    JSONObject rrData = null;
+
+                    try {
+                        rrData = resultData.getJSONObject(Integer.parseInt(finalResultID));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    TextView kekka = findViewById(R.id.kekka);
+                    TextView date = findViewById(R.id.date);
+                    TextView taibou = findViewById(R.id.taibou);
+                    TextView machibito = findViewById(R.id.machibito);
+                    TextView renai = findViewById(R.id.renai);
+                    TextView endan = findViewById(R.id.endan);
+                    TextView place = findViewById(R.id.place);
+
+                    try {
+            kekka.setText(finalViewResult);
+            date.setText(finalViewDay);
+                        taibou.setText("願望：　" + rrData.getString("願望"));
+                        machibito.setText("待人：　" + rrData.getString("待人"));
+                        renai.setText("恋愛：　" + rrData.getString("恋愛"));
+                        endan.setText("縁談：　" + rrData.getString("縁談"));
+            place.setText(finalViewPlace);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    button1.setOnClickListener((view) -> { setScreenMain(); });
+                });
             }
-//            viewData.setText(data);
 
             inputText.close();
         } catch (IOException e) {
@@ -161,8 +291,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-
-        Info info = new Info();
 
         if (scanResult != null) {
             TextView qResultView = (TextView) findViewById(R.id.qr_text_view);
@@ -186,9 +314,32 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 address.setText(place.getAddress());
 
                 info.day = getNowDate();
-                info.place = place.getAddress().toString();
+                info.place = place.getName().toString();
 
                 fileSave(info);
+
+                /*
+                FileOutputStream out = null;
+                try {
+                    out = openFileOutput("omikuji.json", MODE_APPEND);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                String sss = "[{\"day\":\"2018/01/1\",\"place\":\"出雲大社\",\"result\":\"0\"},{\"day\":\"2018/01/02\",\"place\":\"永和神社\",\"result\":\"1\"},{\"day\":\"2018/02/24\",\"place\":\"敢國神社\",\"result\":\"2\"},{\"day\":\"2018/03/14\",\"place\":\"赤城神社\",\"result\":\"1\"},{\"day\":\"2018/04/25\",\"place\":\"浅草神社\",\"result\":\"1\"},{\"day\":\"2018/05/03\",\"place\":\"福井神社\",\"result\":\"0\"},{\"day\":\"2018/06/01\",\"place\":\"足羽神社\",\"result\":\"2\"}]";
+
+                try {
+                    out.write(sss.getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                */
+
+                setScreenMain();
             } else {
                 Toast.makeText(this, "失敗:" + requestCode, Toast.LENGTH_LONG).show();
             }
@@ -225,34 +376,53 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     public void fileSave(Info info) {
-        String oldData = null;
+        String t_day = "";
+        String t_place = "";
+        String t_result = "";
+        String union = "";
+        JSONObject obj = new JSONObject();
 
-        try{
-            FileInputStream in = openFileInput( "omikuji.json" );
-            BufferedReader reader = new BufferedReader( new InputStreamReader( in , "UTF-8") );
-
-            oldData = reader.readLine();
-            Log.d("aaa", "fileSave: " +  oldData);
-
-            reader.close();
-        }catch( IOException e ){
-            e.printStackTrace();
-        }
         try {
-            FileOutputStream out = openFileOutput( "omikuji.json", MODE_APPEND );
-            Log.d("aaa", info.day + info.place + info.result);
+            FileInputStream input = openFileInput("omikuji.json");
+            BufferedReader inputtext = new BufferedReader(new InputStreamReader(input));
+            JSONArray jsonArray = new JSONArray(inputtext.readLine());
 
-            out.write( oldData.getBytes());
-            out.write("[{\"day\":\"2018/06/08\",\"place\":\"日本、〒918-8231 福井県福井市問屋町３丁目６０９\",\"result\":\"だいきちぃ～\"}],".getBytes());
-            out.write(( "[{\"day\":\"" + info.day +
-                    "\",\"place\":\"" + info.place +
-                    "\",\"result\":\"" + info.result + "\"}]," ).getBytes());
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject json = jsonArray.getJSONObject(i);
+                t_day = json.getString("day");
+                t_place = json.getString("place");
+                t_result = json.getString("result");
 
-            out.close();
+                obj.put("day", t_day);
+                obj.put("place", t_place);
+                obj.put("result", t_result);
+                union += obj.toString();
+                union += ",";
+            }
+            inputtext.close();
+            input.close();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            deleteFile("omikuji.json");
+            FileOutputStream out = openFileOutput("omikuji.json", MODE_APPEND);
+
+            obj.put("day", info.day);
+            obj.put("place", info.place);
+            obj.put("result", info.result);
+            union += obj.toString();
+            union = "[" + union + "]";
+            out.write(union.getBytes());
+            out.close();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        } catch (JSONException e1) {
+            e1.printStackTrace();
         }
     }
-
 }
 
